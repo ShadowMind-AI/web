@@ -958,6 +958,27 @@
             padding: 0.5rem 0.4rem 0.1rem; line-height: 1.5;
         }
 
+        /* ---------- פרופיל עם לשוניות, זיכרון וצבעים ---------- */
+        .profile-card.profile-card-wide { max-width: 560px; }
+        .profile-tabs { flex-wrap: wrap; }
+        .profile-tabs .admin-tab { font-size: 0.8rem; padding: 0.45rem 0.4rem; min-width: 80px; }
+        .memory-list { max-height: 240px; overflow-y: auto; margin-bottom: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem; text-align: start; }
+        .memory-item {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem;
+            background: rgba(127,127,127,0.14); border: 1px solid var(--card-border); border-radius: 0.8rem; padding: 0.55rem 0.7rem;
+        }
+        .memory-body { min-width: 0; flex: 1; }
+        .memory-text { font-size: 0.9rem; word-break: break-word; }
+        .memory-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem; }
+        .memory-count { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: start; }
+        .color-grid { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.8rem; text-align: start; }
+        .color-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; font-size: 0.85rem; color: var(--text-muted); }
+        .color-row .color-controls { display: flex; align-items: center; gap: 0.5rem; }
+        .color-row input[type="color"] { width: 42px; height: 30px; border: 1px solid var(--card-border); border-radius: 0.5rem; background: none; padding: 0; cursor: pointer; }
+        .color-row input[type="range"] { width: 110px; accent-color: var(--accent); }
+        .color-row select { background: rgba(15,23,42,0.6); color: white; border: 1px solid var(--card-border); border-radius: 0.5rem; padding: 0.3rem 0.5rem; }
+        .preset-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.8rem; }
+
         .hidden { display: none !important; }
     </style>
 </head>
@@ -1000,6 +1021,7 @@
         </div>
         <div class="sidebar-content" id="sidebar-chats-list"></div>
         <div class="sb-footer">
+            <button class="sb-link" onclick="openProfileModal('memory')">🧠 <span id="lbl-memory-link">הזיכרון שלי</span></button>
             <button class="sb-link" onclick="openGallery()">🖼 <span id="lbl-gallery">הגלריה שלי</span></button>
             <button class="sb-link hidden" id="sb-stats-btn" onclick="openAdminModal(); switchAdminTab('stats');">📊 <span id="lbl-stats">סטטיסטיקות ומחוברים</span></button>
             <div class="sb-credit" id="sb-credit">נוצר על ידי אורי ורדיגר</div>
@@ -1028,60 +1050,109 @@
 
         <!-- חלון פרופיל משתמש (Profile Modal) -->
         <div id="profile-modal" class="modal-overlay hidden">
-            <div class="profile-card">
+            <div class="profile-card profile-card-wide">
                 <button class="close-modal-btn" onclick="closeProfileModal()">✕</button>
                 <h2 id="profile-modal-title">פרופיל משתמש</h2>
                 <p id="profile-modal-desc">נהל את פרטי החשבון שלך ב-NexusMind</p>
 
-                <div style="text-align: right; margin-bottom: 0.3rem;" dir="auto">
-                    <label style="font-size: 0.8rem; color: var(--text-muted);" id="lbl-change-name">שם משתמש חדש:</label>
+                <div class="admin-tabs profile-tabs">
+                    <button class="admin-tab active" id="ptab-btn-account" onclick="switchProfileTab('account')">חשבון</button>
+                    <button class="admin-tab" id="ptab-btn-personality" onclick="switchProfileTab('personality')">אישיות</button>
+                    <button class="admin-tab" id="ptab-btn-memory" onclick="switchProfileTab('memory')">🧠 זיכרון</button>
+                    <button class="admin-tab" id="ptab-btn-background" onclick="switchProfileTab('background')">🎨 רקע וצבעים</button>
                 </div>
-                <input type="text" id="profile-new-username" class="profile-input" placeholder="שם משתמש חדש">
-                <button class="action-btn" onclick="updateProfileUsername()" id="btn-save-username">עדכן שם משתמש</button>
 
-                <hr style="border-color: var(--card-border); margin: 0.75rem 0;">
+                <!-- לשונית חשבון -->
+                <div id="profile-tab-account">
+                    <div style="text-align: right; margin-bottom: 0.3rem;" dir="auto">
+                        <label style="font-size: 0.8rem; color: var(--text-muted);" id="lbl-change-name">שם משתמש חדש:</label>
+                    </div>
+                    <input type="text" id="profile-new-username" class="profile-input" placeholder="שם משתמש חדש">
+                    <button class="action-btn" onclick="updateProfileUsername()" id="btn-save-username">עדכן שם משתמש</button>
 
-                <div style="text-align: right; margin-bottom: 0.3rem;" dir="auto">
-                    <label style="font-size: 0.8rem; color: var(--text-muted);" id="lbl-change-pass">סיסמה חדשה:</label>
+                    <hr style="border-color: var(--card-border); margin: 0.75rem 0;">
+
+                    <div style="text-align: right; margin-bottom: 0.3rem;" dir="auto">
+                        <label style="font-size: 0.8rem; color: var(--text-muted);" id="lbl-change-pass">סיסמה חדשה:</label>
+                    </div>
+                    <input type="password" id="profile-new-password" class="profile-input" placeholder="סיסמה חדשה">
+                    <button class="action-btn" onclick="updateProfilePassword()" id="btn-save-password">עדכן סיסמה</button>
+
+                    <hr style="border-color: var(--card-border); margin: 0.75rem 0;">
+
+                    <button class="action-btn btn-warning" onclick="suspendAccount()" id="btn-suspend-account">השבת חשבון זמנית</button>
+                    <button class="action-btn btn-danger" onclick="deleteAccountPermanently()" id="btn-delete-account">מחק חשבון לצמיתות</button>
                 </div>
-                <input type="password" id="profile-new-password" class="profile-input" placeholder="סיסמה חדשה">
-                <button class="action-btn" onclick="updateProfilePassword()" id="btn-save-password">עדכן סיסמה</button>
 
-                <hr style="border-color: var(--card-border); margin: 0.75rem 0;">
-
-                <div style="text-align: right; margin-bottom: 0.3rem;" dir="auto">
-                    <label style="font-size: 0.8rem; color: var(--text-muted);" id="lbl-personality">אישיות ה-AI:</label>
+                <!-- לשונית אישיות -->
+                <div id="profile-tab-personality" class="hidden">
+                    <div style="text-align: right; margin-bottom: 0.3rem;" dir="auto">
+                        <label style="font-size: 0.8rem; color: var(--text-muted);" id="lbl-personality">אישיות ה-AI:</label>
+                    </div>
+                    <select id="profile-personality" class="profile-input" onchange="onPersonalityChange()">
+                        <option value="default">רגיל</option>
+                        <option value="friendly">חמים וידידותי</option>
+                        <option value="funny">מצחיק</option>
+                        <option value="professional">רציני ומקצועי</option>
+                        <option value="teacher">מורה סבלני</option>
+                        <option value="short">קצר וענייני</option>
+                        <option value="custom">מותאם אישית</option>
+                    </select>
+                    <textarea id="profile-personality-custom" class="profile-input hidden" rows="3" maxlength="500" placeholder="תאר איך ה-AI צריך להתנהג..."></textarea>
+                    <button class="action-btn" onclick="savePersonality()" id="btn-save-personality">שמור אישיות</button>
                 </div>
-                <select id="profile-personality" class="profile-input" onchange="onPersonalityChange()">
-                    <option value="default">רגיל</option>
-                    <option value="friendly">חמים וידידותי</option>
-                    <option value="funny">מצחיק</option>
-                    <option value="professional">רציני ומקצועי</option>
-                    <option value="teacher">מורה סבלני</option>
-                    <option value="short">קצר וענייני</option>
-                    <option value="custom">מותאם אישית</option>
-                </select>
-                <textarea id="profile-personality-custom" class="profile-input hidden" rows="3" maxlength="500" placeholder="תאר איך ה-AI צריך להתנהג..."></textarea>
-                <button class="action-btn" onclick="savePersonality()" id="btn-save-personality">שמור אישיות</button>
 
-                <hr style="border-color: var(--card-border); margin: 0.75rem 0;">
-
-                <div style="text-align: right; margin-bottom: 0.3rem;" dir="auto">
-                    <label style="font-size: 0.8rem; color: var(--text-muted);" id="lbl-custom-bg">רקע מותאם אישית:</label>
+                <!-- לשונית זיכרון -->
+                <div id="profile-tab-memory" class="hidden">
+                    <div class="bg-hint" id="memory-hint">אפשר גם לכתוב ישר בצ'אט: "תזכור ש...". ה-AI מכיר את הדברים האלה, והוא יודע כמה זמן עבר מאז שהוספת אותם, ולכן גם דברים כמו "יש לי טיסה עוד 125 ימים" ימשיכו להיספר.</div>
+                    <div class="memory-count" id="memory-count">0/30</div>
+                    <div class="memory-list" id="memory-list"></div>
+                    <input type="text" id="memory-input" class="profile-input" maxlength="300" placeholder="למשל: השם שלי ברובלוקס הוא אורי" onkeydown="if(event.key === 'Enter') addMemoryFromProfile()">
+                    <button class="action-btn" onclick="addMemoryFromProfile()" id="btn-add-memory">➕ הוסף לזיכרון</button>
+                    <button class="action-btn btn-danger" onclick="clearAllMemories()" id="btn-clear-memory">מחק את כל הזיכרון</button>
                 </div>
-                <input type="text" id="profile-custom-bg" class="profile-input" placeholder="קישור לסרטון (mp4 / YouTube / Vimeo) או לתמונה" style="direction:ltr; text-align:left;">
-                <div class="bg-hint" id="custom-bg-hint">אפשר להדביק קישור ישיר לקובץ וידאו, קישור YouTube או Vimeo, או תמונה / GIF.</div>
-                <div style="text-align: right; margin-bottom: 0.2rem;" dir="auto">
-                    <label style="font-size: 0.8rem; color: var(--text-muted);"><span id="lbl-bg-opacity">בהירות הרקע:</span> <span id="bg-opacity-val">55%</span></label>
+
+                <!-- לשונית רקע וצבעים -->
+                <div id="profile-tab-background" class="hidden">
+                    <div style="text-align: right; margin-bottom: 0.3rem;" dir="auto">
+                        <label style="font-size: 0.8rem; color: var(--text-muted);" id="lbl-custom-bg">רקע מותאם אישית:</label>
+                    </div>
+                    <input type="text" id="profile-custom-bg" class="profile-input" placeholder="קישור לסרטון (mp4 / YouTube / Vimeo) או לתמונה" style="direction:ltr; text-align:left;">
+                    <div class="bg-hint" id="custom-bg-hint">אפשר להדביק קישור ישיר לקובץ וידאו, קישור YouTube או Vimeo, או תמונה / GIF.</div>
+                    <div style="text-align: right; margin-bottom: 0.2rem;" dir="auto">
+                        <label style="font-size: 0.8rem; color: var(--text-muted);"><span id="lbl-bg-opacity">בהירות הרקע:</span> <span id="bg-opacity-val">55%</span></label>
+                    </div>
+                    <input type="range" id="profile-bg-opacity" min="15" max="100" value="55" oninput="onBgOpacityInput()" style="width:100%; margin-bottom:0.8rem; accent-color: var(--accent);">
+                    <button class="action-btn" onclick="saveCustomBg()" id="btn-save-bg">החל רקע</button>
+                    <button class="action-btn btn-warning" onclick="resetCustomBg()" id="btn-reset-bg">חזור לרקע הרגיל</button>
+
+                    <hr style="border-color: var(--card-border); margin: 0.9rem 0;">
+
+                    <div style="text-align: right; margin-bottom: 0.3rem;" dir="auto">
+                        <label style="font-size: 0.8rem; color: var(--text-muted);" id="lbl-ui-colors">צבעי הכפתורים והממשק:</label>
+                    </div>
+                    <div class="bg-hint" id="ui-colors-hint">אם הרקע בהיר או כהה והכפתורים לא נראים טוב מולו, אפשר לבחור כאן צבעים. השינוי מוצג מיד, ונשמר רק אחרי "שמור צבעים".</div>
+                    <div class="preset-row">
+                        <button class="style-chip" id="preset-default" onclick="applyUiPreset('default')">ברירת מחדל</button>
+                        <button class="style-chip" id="preset-light" onclick="applyUiPreset('light')">זכוכית בהירה</button>
+                        <button class="style-chip" id="preset-dark" onclick="applyUiPreset('dark')">כהה מלא</button>
+                        <button class="style-chip" id="preset-neon" onclick="applyUiPreset('neon')">ניאון</button>
+                    </div>
+                    <div class="color-grid">
+                        <div class="color-row"><span id="lbl-ui-accent">צבע ראשי (כפתורים בולטים)</span>
+                            <div class="color-controls"><input type="color" id="ui-accent" value="#38bdf8" oninput="onUiColorInput()"></div></div>
+                        <div class="color-row"><span id="lbl-ui-btn">כפתורים ותפריטים (צבע + שקיפות)</span>
+                            <div class="color-controls"><input type="color" id="ui-btn-color" value="#ffffff" oninput="onUiColorInput()"><input type="range" id="ui-btn-opacity" min="0" max="100" value="8" oninput="onUiColorInput()"></div></div>
+                        <div class="color-row"><span id="lbl-ui-panel">חלוניות וסרגלים (צבע + שקיפות)</span>
+                            <div class="color-controls"><input type="color" id="ui-panel-color" value="#0f172a" oninput="onUiColorInput()"><input type="range" id="ui-panel-opacity" min="20" max="100" value="65" oninput="onUiColorInput()"></div></div>
+                        <div class="color-row"><span id="lbl-ui-text">צבע טקסט</span>
+                            <div class="color-controls"><select id="ui-text-mode" onchange="onUiColorInput()">
+                                <option value="auto">אוטומטי</option><option value="light">בהיר</option><option value="dark">כהה</option>
+                            </select></div></div>
+                    </div>
+                    <button class="action-btn" onclick="saveUiColors()" id="btn-save-colors">שמור צבעים</button>
+                    <button class="action-btn btn-warning" onclick="resetUiColors()" id="btn-reset-colors">אפס צבעים</button>
                 </div>
-                <input type="range" id="profile-bg-opacity" min="15" max="100" value="55" oninput="onBgOpacityInput()" style="width:100%; margin-bottom:0.8rem; accent-color: var(--accent);">
-                <button class="action-btn" onclick="saveCustomBg()" id="btn-save-bg">החל רקע</button>
-                <button class="action-btn btn-warning" onclick="resetCustomBg()" id="btn-reset-bg">חזור לרקע הרגיל</button>
-
-                <hr style="border-color: var(--card-border); margin: 0.75rem 0;">
-
-                <button class="action-btn btn-warning" onclick="suspendAccount()" id="btn-suspend-account">השבת חשבון זמנית</button>
-                <button class="action-btn btn-danger" onclick="deleteAccountPermanently()" id="btn-delete-account">מחק חשבון לצמיתות</button>
             </div>
         </div>
 
@@ -1303,6 +1374,8 @@
         let adminEventsInterval = null;
         let jumpscareTimer = null;
         let customBg = { url: '', opacity: 55 };
+        let uiColors = null;
+        let memoriesCache = [];
 
         const translations = {
             he: {
@@ -1679,8 +1752,8 @@
 
             checkAdminEvents();
             updateUI();
-            loadPersonality();
-            loadCustomBg();
+            loadAccountPrefs();
+            loadMemories();
             loadUsage();
             updateSidebarUser();
             fetchChats().then(loadUserChatsList).catch(() => {});
@@ -2300,7 +2373,7 @@
         }
 
         /* ניהול חלון פרופיל משתמש */
-        function openProfileModal() {
+        function openProfileModal(tab) {
             if (!currentUser) return;
             const profileModal = document.getElementById('profile-modal');
             if (profileModal) {
@@ -2312,13 +2385,19 @@
                 document.getElementById('profile-custom-bg').value = customBg.url || '';
                 document.getElementById('profile-bg-opacity').value = customBg.opacity || 55;
                 document.getElementById('bg-opacity-val').textContent = (customBg.opacity || 55) + '%';
+                fillUiPickers(uiColors);
                 profileModal.classList.remove('hidden');
+                switchProfileTab(typeof tab === 'string' ? tab : 'account');
             }
         }
 
         function closeProfileModal() {
             const profileModal = document.getElementById('profile-modal');
             if (profileModal) profileModal.classList.add('hidden');
+            // מבטלים תצוגה מקדימה שלא נשמרה
+            applyUiColors(uiColors);
+            const holder = document.getElementById('custom-bg');
+            if (holder && customBg.url) holder.style.opacity = String((customBg.opacity || 55) / 100);
         }
 
         async function updateProfileUsername() {
@@ -2626,7 +2705,9 @@
             activeChatHistory.push({ role: "user", content: text });
             appendMessage(text, 'user-msg');
 
-            const isImageRequest = /צור תמונה|צור לי תמונה|תמונה של|תצייר|צייר|ציור של|generate (an? )?image|create (an? )?image|image of|\bdraw\b/i.test(text);
+            const memCmd = detectMemoryCommand(text);
+            const forgetCmd = memCmd ? null : detectForgetCommand(text);
+            const isImageRequest = !memCmd && !forgetCmd && /צור תמונה|צור לי תמונה|תמונה של|תצייר|צייר|ציור של|generate (an? )?image|create (an? )?image|image of|\bdraw\b/i.test(text);
 
             const loadingDiv = appendMessage('', 'ai-msg');
             loadingDiv.innerHTML = thinkingHTML();
@@ -2647,8 +2728,18 @@
                         ? `אתה NexusMind AI - עוזר חכם ומקצועי. שם המשתמש מולך הוא ${userNameStr}. ענה בשפה שבה הפנו אליך שאלה (עברית או אנגלית). אם שואלים אותך מי יצר אותך, מי בנה אותך או מי אחראי עליך, תענה תמיד ברנדומליות בסגנון: "${randomCreatorResp}". לעולם אל תגיד שאתה שייך לספק צד שלישי או תקרא לעצמך בשם אחר.`
                         : `You are NexusMind AI - a smart and empathetic AI assistant. The current user name is ${userNameStr}. Respond in the language used by the user. If asked who created, built, or owns you, ALWAYS answer dynamically like: "${randomCreatorResp}". Do not name third parties or call yourself anything else.`;
 
+                    // פקודות זיכרון: "תזכור ש..." / "תשכח ש..."
+                    let memoryNote = '';
+                    if (memCmd) {
+                        const r = await addMemory(memCmd);
+                        memoryNote = memoryResultNote(r);
+                    } else if (forgetCmd) {
+                        const removed = await forgetMemories(forgetCmd);
+                        memoryNote = forgetResultNote(removed);
+                    }
+
                     const systemMessages = [
-                        { role: "system", content: systemPromptText + getPersonalityPrompt() },
+                        { role: "system", content: systemPromptText + getPersonalityPrompt() + getMemoryPrompt() },
                         ...activeChatHistory
                     ];
 
@@ -2681,6 +2772,7 @@
                         const notes = [];
                         if (searchFailed) notes.push(he ? 'החיפוש לא זמין כרגע, התשובה ניתנה בלי חיפוש (לא נספר במכסה).' : 'Search is unavailable right now; answered without it (not counted).');
                         if (limitHit) notes.push(he ? 'הגעת למגבלת החיפושים להיום, התשובה ניתנה בלי חיפוש.' : "You've reached today's search limit; answered without searching.");
+                        if (memoryNote) notes.push(memoryNote);
                         notes.forEach(n => loadingDiv.appendChild(mk('div', 'prompt-details', n)));
                         activeChatHistory.push({ role: "assistant", content: result.content });
                         saveCurrentChat();
@@ -3508,11 +3600,11 @@
             await persistCustomBg();
         }
 
-        async function loadCustomBg() {
+        async function loadCustomBg(accIn) {
             if (!currentUser) return;
             let url = '', opacity = 55;
             try {
-                const acc = await dbGet('accounts/' + currentUser.uid);
+                const acc = accIn !== undefined ? accIn : await dbGet('accounts/' + currentUser.uid);
                 if (acc && acc.customBg) { url = acc.customBg; opacity = Number(acc.customBgOpacity) || 55; }
             } catch (e) {}
             if (!url) {
@@ -3551,11 +3643,11 @@
             return (he ? '\n\nסגנון התשובה שהמשתמש ביקש: ' : '\n\nResponse style requested by the user: ') + extra;
         }
 
-        async function loadPersonality() {
+        async function loadPersonality(accIn) {
             if (!currentUser) return;
             let p = null;
             try {
-                const acc = await dbGet('accounts/' + currentUser.uid);
+                const acc = accIn !== undefined ? accIn : await dbGet('accounts/' + currentUser.uid);
                 if (acc && acc.personality) p = { type: acc.personality, custom: acc.personalityCustom || '' };
             } catch (e) {}
             if (!p) {
@@ -3583,6 +3675,34 @@
         function updateNewLabels() {
             const he = currentLang === 'he';
             const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+            set('ptab-btn-account', he ? 'חשבון' : 'Account');
+            set('ptab-btn-personality', he ? 'אישיות' : 'Personality');
+            set('ptab-btn-memory', he ? '🧠 זיכרון' : '🧠 Memory');
+            set('ptab-btn-background', he ? '🎨 רקע וצבעים' : '🎨 Background & colors');
+            set('lbl-memory-link', he ? 'הזיכרון שלי' : 'My memory');
+            set('memory-hint', he
+                ? 'אפשר גם לכתוב ישר בצ\'אט: "תזכור ש...". ה-AI מכיר את הדברים האלה, והוא יודע כמה זמן עבר מאז שהוספת אותם, ולכן גם דברים כמו "יש לי טיסה עוד 125 ימים" ימשיכו להיספר.'
+                : 'You can also type in the chat: "Remember that...". The AI knows these things and how long ago you added them, so things like "my flight is in 125 days" keep counting down.');
+            set('btn-add-memory', he ? '➕ הוסף לזיכרון' : '➕ Add to memory');
+            set('btn-clear-memory', he ? 'מחק את כל הזיכרון' : 'Clear all memory');
+            const mIn = document.getElementById('memory-input');
+            if (mIn) mIn.placeholder = he ? 'למשל: השם שלי ברובלוקס הוא אורי' : 'e.g. My Roblox name is Ori';
+            set('lbl-ui-colors', he ? 'צבעי הכפתורים והממשק:' : 'Button & interface colors:');
+            set('ui-colors-hint', he
+                ? 'אם הרקע בהיר או כהה והכפתורים לא נראים טוב מולו, אפשר לבחור כאן צבעים. השינוי מוצג מיד, ונשמר רק אחרי "שמור צבעים".'
+                : 'If the background is very bright or dark and the buttons look bad on it, pick colors here. Changes preview instantly and are saved only after "Save colors".');
+            set('preset-default', he ? 'ברירת מחדל' : 'Default');
+            set('preset-light', he ? 'זכוכית בהירה' : 'Light glass');
+            set('preset-dark', he ? 'כהה מלא' : 'Solid dark');
+            set('preset-neon', he ? 'ניאון' : 'Neon');
+            set('lbl-ui-accent', he ? 'צבע ראשי (כפתורים בולטים)' : 'Main color (primary buttons)');
+            set('lbl-ui-btn', he ? 'כפתורים ותפריטים (צבע + שקיפות)' : 'Buttons & menus (color + opacity)');
+            set('lbl-ui-panel', he ? 'חלוניות וסרגלים (צבע + שקיפות)' : 'Panels & bars (color + opacity)');
+            set('lbl-ui-text', he ? 'צבע טקסט' : 'Text color');
+            set('btn-save-colors', he ? 'שמור צבעים' : 'Save colors');
+            set('btn-reset-colors', he ? 'אפס צבעים' : 'Reset colors');
+            const tm = document.getElementById('ui-text-mode');
+            if (tm) Array.from(tm.options).forEach(o => { o.textContent = ({ auto: he ? 'אוטומטי' : 'Auto', light: he ? 'בהיר' : 'Light', dark: he ? 'כהה' : 'Dark' })[o.value]; });
             set('sb-credit', he ? 'נוצר על ידי אורי ורדיגר' : 'Created by Ori Werdiger');
             set('footer-disclaimer', he ? 'NexusMind הוא בינה מלאכותית בלבד ויכול לטעות. כדאי לוודא מידע חשוב.' : 'NexusMind is only an AI and can make mistakes. Double-check important information.');
             set('footer-copy', he ? 'כל הזכויות שמורות ל-NexusMind © 2026' : 'All rights reserved to NexusMind © 2026');
@@ -3610,6 +3730,393 @@
             const ta = document.getElementById('profile-personality-custom');
             if (ta) ta.placeholder = he ? 'תאר איך ה-AI צריך להתנהג...' : 'Describe how the AI should behave...';
             ['mic-home', 'mic-chat'].forEach(id => { const b = document.getElementById(id); if (b) b.title = he ? 'הקלטה' : 'Voice input'; });
+        }
+
+        /* ================= טעינת הגדרות חשבון (פעם אחת) ================= */
+        async function loadAccountPrefs() {
+            if (!currentUser) return;
+            let acc = null;
+            try { acc = await dbGet('accounts/' + currentUser.uid); } catch (e) {}
+            loadPersonality(acc);
+            loadCustomBg(acc);
+            loadUiColors(acc);
+        }
+
+        /* ================= לשוניות בפרופיל ================= */
+        function switchProfileTab(tab) {
+            ['account', 'personality', 'memory', 'background'].forEach(t => {
+                const pane = document.getElementById('profile-tab-' + t);
+                const btn = document.getElementById('ptab-btn-' + t);
+                if (pane) pane.classList.toggle('hidden', t !== tab);
+                if (btn) btn.classList.toggle('active', t === tab);
+            });
+            if (tab === 'memory') renderMemoryList();
+        }
+
+        /* ================= צבעי ממשק (כפתורים, חלוניות, טקסט) ================= */
+        const uiPresets = {
+            default: null,
+            light: { accent: '#0369a1', btnColor: '#ffffff', btnOpacity: 60, panelColor: '#ffffff', panelOpacity: 72, text: 'dark' },
+            dark:  { accent: '#38bdf8', btnColor: '#1e293b', btnOpacity: 90, panelColor: '#0b1220', panelOpacity: 92, text: 'light' },
+            neon:  { accent: '#f0abfc', btnColor: '#3b0764', btnOpacity: 72, panelColor: '#12002b', panelOpacity: 78, text: 'light' }
+        };
+        const uiDefaults = { accent: '#38bdf8', btnColor: '#ffffff', btnOpacity: 8, panelColor: '#0f172a', panelOpacity: 65, text: 'auto' };
+
+        function safeHex(v, def) { return /^#[0-9a-f]{6}$/i.test(String(v || '')) ? String(v) : def; }
+        function clampNum(v, min, max, def) { v = Number(v); return isFinite(v) ? Math.max(min, Math.min(max, v)) : def; }
+
+        function sanitizeUiColors(c) {
+            if (!c || typeof c !== 'object') return null;
+            return {
+                accent: safeHex(c.accent, uiDefaults.accent),
+                btnColor: safeHex(c.btnColor, uiDefaults.btnColor),
+                btnOpacity: clampNum(c.btnOpacity, 0, 100, uiDefaults.btnOpacity),
+                panelColor: safeHex(c.panelColor, uiDefaults.panelColor),
+                panelOpacity: clampNum(c.panelOpacity, 20, 100, uiDefaults.panelOpacity),
+                text: ['auto', 'light', 'dark'].includes(c.text) ? c.text : 'auto'
+            };
+        }
+
+        function hexToRgb(hex) {
+            const n = parseInt(String(hex).slice(1), 16);
+            return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+        }
+        function rgbaStr(hex, a) {
+            const [r, g, b] = hexToRgb(hex);
+            return 'rgba(' + r + ',' + g + ',' + b + ',' + Math.max(0, Math.min(1, a)).toFixed(2) + ')';
+        }
+        function relLum(hex) {
+            const [r, g, b] = hexToRgb(hex).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        }
+        function shadeHex(hex, amt) {
+            const [r, g, b] = hexToRgb(hex);
+            const target = amt < 0 ? 0 : 255, p = Math.abs(amt);
+            return '#' + [r, g, b].map(v => Math.round(v + (target - v) * p).toString(16).padStart(2, '0')).join('');
+        }
+
+        function applyUiColors(raw) {
+            let tag = document.getElementById('user-ui-style');
+            const c = sanitizeUiColors(raw);
+            if (!c) { if (tag) tag.remove(); return; }
+            if (!tag) {
+                tag = document.createElement('style');
+                tag.id = 'user-ui-style';
+                document.head.appendChild(tag);
+            }
+            const accHover = shadeHex(c.accent, -0.22);
+            const ink = relLum(c.accent) > 0.5 ? '#0f172a' : '#ffffff';
+            const bo = c.btnOpacity / 100, po = c.panelOpacity / 100;
+            const btn = rgbaStr(c.btnColor, bo);
+            const btnHover = rgbaStr(c.btnColor, Math.min(1, bo + 0.14));
+            const btnStrong = rgbaStr(c.btnColor, Math.min(1, bo + 0.35));
+            const panel = rgbaStr(c.panelColor, po);
+            const panelStrong = rgbaStr(c.panelColor, Math.min(1, po + 0.1));
+            const darkText = c.text === 'dark' || (c.text === 'auto' && relLum(c.panelColor) > 0.5);
+            const textMain = darkText ? '#0f172a' : '#f8fafc';
+            const textMuted = darkText ? '#475569' : '#cbd5e1';
+            const border = darkText ? 'rgba(15,23,42,0.22)' : 'rgba(255,255,255,0.16)';
+
+            tag.textContent =
+                'body, body.theme-purple, body.theme-dark, body.theme-light {' +
+                    '--accent:' + c.accent + ';--accent-hover:' + accHover + ';--card-bg:' + panel + ';--card-border:' + border + ';' +
+                    '--text-main:' + textMain + ';--text-muted:' + textMuted + ';--user-bubble:' + btnStrong + ';}' +
+                'header{background:' + panel + ';}' +
+                '.search-box-container{background:' + panelStrong + ';}' +
+                '.sidebar-toggle-btn,.back-nav-btn,.user-badge,.mini-btn,.style-chip,.sb-link{background:' + btn + ';}' +
+                '.sidebar-toggle-btn:hover,.back-nav-btn:hover,.user-badge:hover,.mini-btn:hover,.style-chip:hover,.sb-link:hover{background:' + btnHover + ';}' +
+                '.chip,.theme-select,.lang-select,.sb-search,.picker-input{background:' + btnStrong + ';}' +
+                '.chip:hover{background:' + btnHover + ';}' +
+                '.send-btn,.new-chat-btn,.auth-btn,.action-btn,.picker-go,.style-chip.selected,.mini-btn.on,.admin-tab.active,.download-btn,.sb-avatar{color:' + ink + ';}';
+        }
+
+        function fillUiPickers(c) {
+            const v = sanitizeUiColors(c) || uiDefaults;
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+            set('ui-accent', v.accent);
+            set('ui-btn-color', v.btnColor);
+            set('ui-btn-opacity', v.btnOpacity);
+            set('ui-panel-color', v.panelColor);
+            set('ui-panel-opacity', v.panelOpacity);
+            set('ui-text-mode', v.text);
+        }
+
+        function readUiPickers() {
+            const get = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+            return sanitizeUiColors({
+                accent: get('ui-accent'), btnColor: get('ui-btn-color'), btnOpacity: get('ui-btn-opacity'),
+                panelColor: get('ui-panel-color'), panelOpacity: get('ui-panel-opacity'), text: get('ui-text-mode')
+            });
+        }
+
+        function onUiColorInput() { applyUiColors(readUiPickers()); }
+
+        function applyUiPreset(name) {
+            const preset = uiPresets[name];
+            fillUiPickers(preset);
+            applyUiColors(preset);
+        }
+
+        async function persistUiColors() {
+            if (!currentUser) return;
+            try {
+                if (uiColors) localStorage.setItem('nexus_ui_colors_' + currentUser.uid, JSON.stringify(uiColors));
+                else localStorage.removeItem('nexus_ui_colors_' + currentUser.uid);
+            } catch (e) {}
+            try { await dbPatch('accounts/' + currentUser.uid, { uiColors: uiColors || null }); } catch (e) {}
+        }
+
+        async function saveUiColors() {
+            const he = currentLang === 'he';
+            uiColors = readUiPickers();
+            applyUiColors(uiColors);
+            await persistUiColors();
+            alert(he ? "הצבעים נשמרו!" : "Colors saved!");
+        }
+
+        async function resetUiColors() {
+            uiColors = null;
+            applyUiColors(null);
+            fillUiPickers(null);
+            await persistUiColors();
+        }
+
+        function loadUiColors(accIn) {
+            if (!currentUser) return;
+            let c = accIn && accIn.uiColors ? accIn.uiColors : null;
+            if (!c) { try { c = JSON.parse(localStorage.getItem('nexus_ui_colors_' + currentUser.uid)); } catch (e) {} }
+            uiColors = sanitizeUiColors(c);
+            applyUiColors(uiColors);
+        }
+
+        /* ================= זיכרון ================= */
+        const MEMORY_MAX = 30;
+
+        function dayStartMs(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); }
+        function daysBetween(aMs, bMs) { return Math.round((dayStartMs(new Date(bMs)) - dayStartMs(new Date(aMs))) / 86400000); }
+        function isoDate(d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+
+        // מחשב תאריך יעד מביטויים כמו "עוד 125 ימים", "בעוד שבועיים", "in 3 weeks", "tomorrow"
+        function resolveDueDate(text, baseMs) {
+            const t = String(text || '');
+            const base = new Date(baseMs);
+            const heUnit = { 'יום': 'd', 'ימים': 'd', 'שבוע': 'w', 'שבועות': 'w', 'חודש': 'm', 'חודשים': 'm', 'שנה': 'y', 'שנים': 'y' };
+            const enUnit = { day: 'd', days: 'd', week: 'w', weeks: 'w', month: 'm', months: 'm', year: 'y', years: 'y' };
+            let n = null, unit = null, m;
+
+            if ((m = t.match(/(?:^|[^\u0590-\u05FF])(?:בעוד|עוד)\s+(\d+)\s*(ימים|יום|שבועות|שבוע|חודשים|חודש|שנים|שנה)(?![\u0590-\u05FF])/))) { n = Number(m[1]); unit = heUnit[m[2]]; }
+            else if ((m = t.match(/(?:^|[^\u0590-\u05FF])(?:בעוד|עוד)\s+(יומיים|שבועיים|חודשיים|שנתיים)(?![\u0590-\u05FF])/))) { n = 2; unit = { 'יומיים': 'd', 'שבועיים': 'w', 'חודשיים': 'm', 'שנתיים': 'y' }[m[1]]; }
+            else if ((m = t.match(/(?:^|[^\u0590-\u05FF])(?:בעוד|עוד)\s+(יום|שבוע|חודש|שנה)(?![\u0590-\u05FF])/))) { n = 1; unit = heUnit[m[1]]; }
+            else if (/(?:^|[^\u0590-\u05FF])מחרתיים(?![\u0590-\u05FF])/.test(t)) { n = 2; unit = 'd'; }
+            else if (/(?:^|[^\u0590-\u05FF])מחר(?![\u0590-\u05FF])/.test(t)) { n = 1; unit = 'd'; }
+            else if ((m = t.match(/\bin\s+(\d+)\s+(days?|weeks?|months?|years?)\b/i))) { n = Number(m[1]); unit = enUnit[m[2].toLowerCase()]; }
+            else if (/\bday after tomorrow\b/i.test(t)) { n = 2; unit = 'd'; }
+            else if (/\btomorrow\b/i.test(t)) { n = 1; unit = 'd'; }
+
+            if (n === null || !unit || !isFinite(n) || n > 36500) return '';
+            const d = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+            if (unit === 'd') d.setDate(d.getDate() + n);
+            else if (unit === 'w') d.setDate(d.getDate() + n * 7);
+            else if (unit === 'm') d.setMonth(d.getMonth() + n);
+            else if (unit === 'y') d.setFullYear(d.getFullYear() + n);
+            return isoDate(d);
+        }
+
+        function relDaysLabel(days, he) {
+            if (days === 0) return he ? 'היום' : 'today';
+            if (days > 0) return he ? 'בעוד ' + days + ' ימים' : 'in ' + days + ' days';
+            return he ? 'לפני ' + (-days) + ' ימים' : (-days) + ' days ago';
+        }
+
+        function cleanMemoryText(t) {
+            return String(t || '').trim().replace(/^(?:נגיד|למשל|כאילו)\s+/, '').replace(/[\s.]+$/, '').slice(0, 300);
+        }
+
+        function detectMemoryCommand(text) {
+            const t = String(text || '').trim();
+            if (t.length > 450) return null;
+            let m = t.match(/^(?:בבקשה\s+)?(?:תזכור|תזכרי|זכור)(?:\s+לי)?(?:\s+(?:בזיכרון|לזיכרון)(?:\s+שלך)?)?\s*(?:ש[-\s]?|[:,-]\s*)([\s\S]{3,})$/);
+            if (!m) m = t.match(/^(?:בבקשה\s+)?(?:תשמור|שמור|תרשום|רשום|תוסיף|הוסף)(?:\s+לי)?\s+(?:בזיכרון|לזיכרון)(?:\s+שלך)?\s*(?:ש[-\s]?|[:,-]\s*)?([\s\S]{3,})$/);
+            if (!m) m = t.match(/^(?:please\s+)?remember(?:\s+in\s+your\s+memory)?(?:\s+that)?\s*[:,-]?\s+([\s\S]{3,})$/i);
+            if (!m) m = t.match(/^(?:please\s+)?(?:save|store|add)\s+(?:this\s+)?(?:to|in)\s+(?:your\s+)?memory\s*(?:that)?\s*[:,-]?\s*([\s\S]{3,})$/i);
+            if (!m) return null;
+            const out = cleanMemoryText(m[1]);
+            if (out.length < 3 || /^(when|how|what|who|why|where|if|me\b)/i.test(out)) return null;
+            return out;
+        }
+
+        function detectForgetCommand(text) {
+            const t = String(text || '').trim();
+            if (t.length > 300) return null;
+            let m = t.match(/^(?:בבקשה\s+)?(?:תשכח|שכח)(?:\s+(?:מהזיכרון|בזיכרון)(?:\s+שלך)?)?\s*(?:ש[-\s]?|את\s+|על\s+|[:,-]\s*)?([\s\S]{2,})$/);
+            if (!m) m = t.match(/^(?:בבקשה\s+)?(?:תמחק|מחק|תסיר|הסר)\s+(?:מהזיכרון|בזיכרון)(?:\s+שלך)?\s*(?:ש[-\s]?|את\s+|[:,-]\s*)?([\s\S]{2,})$/);
+            if (!m) m = t.match(/^(?:please\s+)?forget\s+(?:that\s+|about\s+)?([\s\S]{2,})$/i);
+            if (!m) m = t.match(/^(?:please\s+)?(?:delete|remove)\s+from\s+(?:your\s+)?memory\s*[:,-]?\s*(?:that\s+)?([\s\S]{2,})$/i);
+            if (!m) return null;
+            const q = cleanMemoryText(m[1]);
+            return q.length >= 2 ? q : null;
+        }
+
+        function memoryMatches(mem, query) {
+            const a = mem.text.toLowerCase(), q = query.toLowerCase();
+            if (a.includes(q) || (a.length >= 4 && q.includes(a))) return true;
+            const words = q.split(/[\s,.;:!?()"'-]+/).filter(w => w.length >= 3);
+            if (!words.length) return false;
+            const hits = words.filter(w => a.includes(w)).length;
+            return hits >= Math.min(2, words.length) && words.length > 1;
+        }
+
+        function saveMemoriesLocal() {
+            if (!currentUser) return;
+            try { localStorage.setItem('nexus_memories_' + currentUser.uid, JSON.stringify(memoriesCache)); } catch (e) {}
+        }
+
+        async function loadMemories() {
+            if (!currentUser) return;
+            let list = null;
+            try {
+                const obj = (await dbGet('memories/' + currentUser.uid)) || {};
+                list = Object.values(obj).filter(m => m && m.text);
+            } catch (e) {}
+            if (!list) {
+                try { list = JSON.parse(localStorage.getItem('nexus_memories_' + currentUser.uid)) || []; } catch (e) { list = []; }
+            }
+            memoriesCache = list.sort((a, b) => a.createdAt - b.createdAt);
+            saveMemoriesLocal();
+            renderMemoryList();
+        }
+
+        async function addMemory(raw) {
+            if (!currentUser) return { error: 'nouser' };
+            const text = cleanMemoryText(raw);
+            if (text.length < 3) return { error: 'empty' };
+            if (memoriesCache.some(m => m.text.toLowerCase() === text.toLowerCase())) return { dup: true };
+            if (memoriesCache.length >= MEMORY_MAX) return { limit: true };
+            const id = Date.now();
+            const mem = { id: id, text: text, createdAt: id, due: resolveDueDate(text, id) };
+            memoriesCache.push(mem);
+            saveMemoriesLocal();
+            dbPut('memories/' + currentUser.uid + '/m' + id, mem).catch(() => {});
+            renderMemoryList();
+            return { ok: true, mem: mem };
+        }
+
+        async function forgetMemories(query) {
+            const removed = memoriesCache.filter(m => memoryMatches(m, query));
+            if (!removed.length) return [];
+            memoriesCache = memoriesCache.filter(m => !removed.includes(m));
+            saveMemoriesLocal();
+            removed.forEach(m => dbDelete('memories/' + currentUser.uid + '/m' + m.id).catch(() => {}));
+            renderMemoryList();
+            return removed;
+        }
+
+        async function deleteMemory(id) {
+            memoriesCache = memoriesCache.filter(m => String(m.id) !== String(id));
+            saveMemoriesLocal();
+            dbDelete('memories/' + currentUser.uid + '/m' + id).catch(() => {});
+            renderMemoryList();
+        }
+
+        async function clearAllMemories() {
+            const he = currentLang === 'he';
+            if (!memoriesCache.length) return;
+            if (!confirm(he ? 'למחוק את כל הזיכרון?' : 'Delete all memory?')) return;
+            const ids = memoriesCache.map(m => m.id);
+            memoriesCache = [];
+            saveMemoriesLocal();
+            ids.forEach(id => dbDelete('memories/' + currentUser.uid + '/m' + id).catch(() => {}));
+            renderMemoryList();
+        }
+
+        async function addMemoryFromProfile() {
+            const he = currentLang === 'he';
+            const input = document.getElementById('memory-input');
+            const r = await addMemory(input.value);
+            if (r.ok) input.value = '';
+            else if (r.limit) alert(he ? 'הזיכרון מלא (' + MEMORY_MAX + '). מחק פריטים כדי להוסיף.' : 'Memory is full (' + MEMORY_MAX + '). Delete some items first.');
+            else if (r.dup) alert(he ? 'זה כבר בזיכרון' : 'Already in memory');
+        }
+
+        function renderMemoryList() {
+            const he = currentLang === 'he';
+            const box = document.getElementById('memory-list');
+            const count = document.getElementById('memory-count');
+            if (count) count.textContent = memoriesCache.length + '/' + MEMORY_MAX;
+            if (!box) return;
+            box.innerHTML = '';
+            if (!memoriesCache.length) {
+                box.appendChild(mk('div', 'sb-empty', he ? 'עוד אין דברים בזיכרון.' : 'Nothing in memory yet.'));
+                return;
+            }
+            memoriesCache.slice().sort((a, b) => b.createdAt - a.createdAt).forEach(m => {
+                const row = mk('div', 'memory-item');
+                const body = mk('div', 'memory-body');
+                const txt = mk('div', 'memory-text', m.text);
+                txt.setAttribute('dir', 'auto');
+                body.appendChild(txt);
+                let meta = (he ? 'נשמר ב-' : 'Saved ') + isoDate(new Date(m.createdAt));
+                if (m.due) {
+                    const left = daysBetween(Date.now(), new Date(m.due + 'T00:00:00').getTime());
+                    meta += ' · ' + (he ? 'יעד: ' : 'Target: ') + m.due + ' (' + relDaysLabel(left, he) + ')';
+                }
+                body.appendChild(mk('div', 'memory-meta', meta));
+                const del = mk('button', 'ci-btn', '🗑');
+                del.title = he ? 'מחק' : 'Delete';
+                del.onclick = () => deleteMemory(m.id);
+                row.append(body, del);
+                box.appendChild(row);
+            });
+        }
+
+        // כל הודעה מקבלת את התאריך של היום ואת הזיכרון, כך ש-AI יודע לחשב זמנים
+        function getMemoryPrompt() {
+            const he = currentLang === 'he';
+            const now = new Date();
+            const weekday = now.toLocaleDateString(he ? 'he-IL' : 'en-US', { weekday: 'long' });
+            const hhmm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            let out = he
+                ? '\n\nהתאריך והשעה עכשיו: ' + isoDate(now) + ' (' + weekday + '), ' + hhmm + '.'
+                : '\n\nCurrent date and time: ' + isoDate(now) + ' (' + weekday + '), ' + hhmm + '.';
+            if (!memoriesCache.length) return out;
+
+            out += he
+                ? '\n\nזיכרון על המשתמש (דברים שהוא ביקש ממך לזכור). השתמש בהם כשזה רלוונטי, ואל תזכיר אותם בלי סיבה:'
+                : '\n\nMemory about the user (things they asked you to remember). Use them when relevant and do not bring them up for no reason:';
+            memoriesCache.forEach(m => {
+                const ago = daysBetween(m.createdAt, Date.now());
+                let line = '\n- [' + (he ? 'נשמר ב-' : 'saved ') + isoDate(new Date(m.createdAt)) + ', ' + relDaysLabel(-ago, he) + '] ' + m.text;
+                if (m.due) {
+                    const left = daysBetween(Date.now(), new Date(m.due + 'T00:00:00').getTime());
+                    line += he
+                        ? ' → תאריך היעד: ' + m.due + ' (' + relDaysLabel(left, true) + ' מהיום)'
+                        : ' -> target date: ' + m.due + ' (' + relDaysLabel(left, false) + ' from today)';
+                }
+                out += line;
+            });
+            out += he
+                ? '\nכשפריט בזיכרון מתייחס לזמן יחסי (כמו "עוד 125 ימים"), חשב לפי התאריך שנשמר ליד הפריט ולפי התאריך של היום. כשהמשתמש מבקש ממך לזכור משהו, אשר בקצרה שזה נשמר.'
+                : '\nWhen a memory item refers to relative time (like "in 125 days"), calculate it from the date saved next to it and today\'s date. When the user asks you to remember something, briefly confirm it was saved.';
+            return out;
+        }
+
+        function memoryResultNote(r) {
+            const he = currentLang === 'he';
+            if (r.ok) {
+                return '🧠 ' + (he ? 'נשמר בזיכרון: "' : 'Saved to memory: "') + r.mem.text + '"' +
+                    (r.mem.due ? (he ? ' (יעד: ' : ' (target: ') + r.mem.due + ')' : '');
+            }
+            if (r.limit) return he ? '🧠 הזיכרון מלא (' + MEMORY_MAX + '). אפשר למחוק פריטים בפרופיל.' : '🧠 Memory is full (' + MEMORY_MAX + '). You can delete items in your profile.';
+            if (r.dup) return he ? '🧠 זה כבר בזיכרון.' : '🧠 Already in memory.';
+            return '';
+        }
+
+        function forgetResultNote(removed) {
+            const he = currentLang === 'he';
+            if (!removed.length) return he ? '🧠 לא מצאתי בזיכרון משהו כזה.' : "🧠 I couldn't find that in memory.";
+            return '🧠 ' + (he ? 'נמחק מהזיכרון: ' : 'Removed from memory: ') + removed.map(m => '"' + m.text + '"').join(', ');
         }
 
         /* ================= שימוש יומי (מכסות + סטטיסטיקות) ================= */
@@ -3708,12 +4215,14 @@
             let raw = '';
             let buffer = '';
             let scheduled = false;
+            let finished = false;   // אחרי שהתשובה נגמרה, אסור לצייר שוב (אחרת זה מוחק את הכפתורים וההערות)
 
             const render = () => {
-                if (scheduled) return;
+                if (scheduled || finished) return;
                 scheduled = true;
                 requestAnimationFrame(() => {
                     scheduled = false;
+                    if (finished) return;
                     if (!textSpan) {
                         div.innerHTML = '';
                         textSpan = document.createElement('div');
@@ -3765,6 +4274,7 @@
                 } catch (e) {}
             }
 
+            finished = true;
             content = content.trim();
             return { content: content, annotations: annotations, error: content ? null : (streamErr || null) };
         }
