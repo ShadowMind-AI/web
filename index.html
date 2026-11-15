@@ -979,6 +979,68 @@
         .color-row select { background: rgba(15,23,42,0.6); color: white; border: 1px solid var(--card-border); border-radius: 0.5rem; padding: 0.3rem 0.5rem; }
         .preset-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.8rem; }
 
+        /* ---------- אייקונים, מיקרופון ושיחה קולית ---------- */
+        .ic { width: 20px; height: 20px; fill: currentColor; display: block; flex-shrink: 0; }
+        .mic-btn { color: var(--text-main); }
+        .mic-btn:hover { color: var(--accent); }
+        .mic-btn.mic-active { color: #fff; }
+        .voice-btn {
+            display: flex; align-items: center; gap: 0.45rem; border: none; border-radius: 1.4rem; padding: 0.42rem 0.95rem 0.42rem 0.8rem;
+            font-weight: 700; font-size: 0.85rem; cursor: pointer; color: #0f172a;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover)); box-shadow: 0 4px 14px rgba(0,0,0,0.25); transition: 0.2s;
+        }
+        .voice-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+        .voice-btn .ic { width: 18px; height: 18px; }
+
+        .voice-overlay {
+            position: fixed; inset: 0; z-index: 2700; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 1.4rem; padding: 1.5rem; color: #f8fafc; text-align: center;
+            background: radial-gradient(circle at 50% 38%, rgba(14,36,74,0.9), rgba(4,7,18,0.95)); backdrop-filter: blur(16px);
+        }
+        .voice-top { position: absolute; top: 1.2rem; left: 0; right: 0; font-size: 0.85rem; color: #94a3b8; letter-spacing: 0.04em; }
+        .voice-stage { position: relative; width: 240px; height: 240px; display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .voice-rings span { position: absolute; inset: 40px; border-radius: 50%; border: 2px solid var(--accent); opacity: 0; }
+        .state-listening .voice-rings span, .state-speaking .voice-rings span { animation: ringOut 2.4s ease-out infinite; }
+        .voice-rings span:nth-child(2) { animation-delay: 0.8s; }
+        .voice-rings span:nth-child(3) { animation-delay: 1.6s; }
+        .state-speaking .voice-rings span { border-width: 3px; animation-duration: 1.6s; }
+        @keyframes ringOut { 0% { transform: scale(0.72); opacity: 0.55; } 100% { transform: scale(1.55); opacity: 0; } }
+        .voice-kick { position: relative; }
+        .voice-kick.kick { animation: kickPop 0.18s ease-out; }
+        @keyframes kickPop { 0% { transform: scale(1); } 45% { transform: scale(1.1) rotate(-2deg); } 100% { transform: scale(1); } }
+        .voice-logo {
+            width: 140px; height: 140px; border-radius: 32px; background: var(--ai-avatar) center / contain no-repeat;
+            filter: drop-shadow(0 0 26px color-mix(in srgb, var(--accent) 55%, transparent));
+        }
+        .state-listening .voice-logo { animation: breathe 3.2s ease-in-out infinite; }
+        .state-thinking .voice-logo { animation: avatarPulse 1.2s ease-in-out infinite; }
+        .state-speaking .voice-logo, .voice-logo.shake { animation: vibrate 0.14s linear infinite; }
+        .state-muted .voice-logo, .state-paused .voice-logo { opacity: 0.55; filter: grayscale(0.6); }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes vibrate {
+            0% { transform: translate(0, 0) rotate(0); } 20% { transform: translate(-2px, 1px) rotate(-1.4deg); }
+            40% { transform: translate(2px, -1px) rotate(1.4deg); } 60% { transform: translate(-1px, -2px) rotate(-1deg); }
+            80% { transform: translate(1px, 2px) rotate(1deg); } 100% { transform: translate(0, 0) rotate(0); }
+        }
+        .voice-status { font-size: 1.5rem; font-weight: 700; min-height: 2rem; }
+        .state-listening .voice-status { color: var(--accent); }
+        .voice-caps { width: 100%; max-width: 620px; max-height: 28vh; overflow-y: auto; display: flex; flex-direction: column; gap: 0.7rem; }
+        .vcap-user { color: #94a3b8; font-size: 1.05rem; min-height: 1.4rem; }
+        .vcap-ai { color: #e2e8f0; font-size: 1.15rem; line-height: 1.6; }
+        .voice-controls { display: flex; gap: 1.2rem; align-items: center; margin-top: 0.4rem; }
+        .voice-ctl {
+            width: 60px; height: 60px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.18); cursor: pointer;
+            background: rgba(255,255,255,0.1); color: #fff; display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .voice-ctl .ic { width: 26px; height: 26px; }
+        .voice-ctl:hover { background: rgba(255,255,255,0.2); transform: scale(1.06); }
+        .voice-ctl.muted { background: #f59e0b; border-color: #f59e0b; color: #0f172a; }
+        .voice-ctl.voice-end { background: #ef4444; border-color: #ef4444; width: 68px; height: 68px; box-shadow: 0 6px 20px rgba(239,68,68,0.45); }
+        .voice-ctl.voice-end:hover { background: #dc2626; }
+        @media (prefers-reduced-motion: reduce) {
+            .voice-logo, .voice-rings span, .voice-kick { animation: none !important; }
+        }
+
         .hidden { display: none !important; }
     </style>
 </head>
@@ -1220,6 +1282,24 @@
             </div>
         </div>
 
+        <!-- שיחה קולית -->
+        <div id="voice-overlay" class="voice-overlay hidden">
+            <div class="voice-top" id="voice-top">שיחה קולית · NexusMind AI</div>
+            <div class="voice-stage" id="voice-stage" onclick="onVoiceLogoTap()">
+                <div class="voice-rings"><span></span><span></span><span></span></div>
+                <div class="voice-kick" id="voice-kick"><div class="voice-logo" id="voice-logo"></div></div>
+            </div>
+            <div class="voice-status" id="voice-status">מקשיב...</div>
+            <div class="voice-caps">
+                <div class="vcap-user" id="voice-user-cap"></div>
+                <div class="vcap-ai" id="voice-ai-cap"></div>
+            </div>
+            <div class="voice-controls">
+                <button class="voice-ctl" id="voice-mute-btn" onclick="toggleVoiceMute()" title="השתק מיקרופון"><svg class="ic" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></button>
+                <button class="voice-ctl voice-end" onclick="endVoiceMode()" title="סיים שיחה"><svg class="ic" viewBox="0 0 24 24"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg></button>
+            </div>
+        </div>
+
         <!-- גלריית תמונות -->
         <div id="gallery-modal" class="modal-overlay hidden">
             <div class="gallery-card">
@@ -1281,7 +1361,8 @@
                 <input type="text" id="home-input" class="search-box-input" placeholder="שאל שאלה או בקש ליצור תמונה..." onkeydown="if(event.key === 'Enter') startChatFromHome()">
                 <div class="search-box-tools">
                     <div style="display:flex; align-items:center; gap:0.5rem;">
-                        <button class="mic-btn" id="mic-home" onclick="toggleMic('home-input','mic-home')" title="הקלטה">🎤</button>
+                        <button class="mic-btn" id="mic-home" onclick="toggleMic('home-input','mic-home')" title="הקלטה"><svg class="ic" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></button>
+                        <button class="voice-btn" onclick="openVoiceMode()" title="שיחה קולית"><svg class="ic" viewBox="0 0 24 24"><path d="M7 18h2V6H7v12zm4 4h2V2h-2v20zm-8-8h2v-4H3v4zm12 4h2V6h-2v12zm4-8v4h2v-4h-2z"/></svg><span class="lbl-voice">שיחה</span></button>
                         <button class="mini-btn" id="btn-search-toggle-home" onclick="toggleSearch()">🌐 חיפוש</button>
                     </div>
                     <div class="search-actions">
@@ -1310,8 +1391,9 @@
             <div class="search-box-container" style="margin-bottom: 0;">
                 <input type="text" id="chat-input" class="search-box-input" placeholder="הקלד הודעה או בקשה לתמונה..." onkeydown="if(event.key === 'Enter') sendChatMessage()">
                 <div class="search-box-tools">
-                    <div style="display:flex; align-items:center; gap:0.6rem;">
-                        <button class="mic-btn" id="mic-chat" onclick="toggleMic('chat-input','mic-chat')" title="הקלטה">🎤</button>
+                    <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                        <button class="mic-btn" id="mic-chat" onclick="toggleMic('chat-input','mic-chat')" title="הקלטה"><svg class="ic" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></button>
+                        <button class="voice-btn" onclick="openVoiceMode()" title="שיחה קולית"><svg class="ic" viewBox="0 0 24 24"><path d="M7 18h2V6H7v12zm4 4h2V2h-2v20zm-8-8h2v-4H3v4zm12 4h2V6h-2v12zm4-8v4h2v-4h-2z"/></svg><span class="lbl-voice">שיחה</span></button>
                         <button class="mini-btn" id="btn-search-toggle" onclick="toggleSearch()">🌐 חיפוש</button>
                         <button class="mini-btn" id="btn-export-chat" onclick="exportChat()">⬇ ייצוא שיחה</button>
                         <span style="font-size:0.8rem; color:var(--text-muted);" id="lbl-ai-status">NexusMind AI v3.0</span>
@@ -2701,13 +2783,14 @@
             if (!text) return;
 
             if (!customText && input) input.value = '';
+            lastAiReply = '';
 
             activeChatHistory.push({ role: "user", content: text });
             appendMessage(text, 'user-msg');
 
             const memCmd = detectMemoryCommand(text);
             const forgetCmd = memCmd ? null : detectForgetCommand(text);
-            const isImageRequest = !memCmd && !forgetCmd && /צור תמונה|צור לי תמונה|תמונה של|תצייר|צייר|ציור של|generate (an? )?image|create (an? )?image|image of|\bdraw\b/i.test(text);
+            const isImageRequest = !voice.active && !memCmd && !forgetCmd && /צור תמונה|צור לי תמונה|תמונה של|תצייר|צייר|ציור של|generate (an? )?image|create (an? )?image|image of|\bdraw\b/i.test(text);
 
             const loadingDiv = appendMessage('', 'ai-msg');
             loadingDiv.innerHTML = thinkingHTML();
@@ -2739,7 +2822,7 @@
                     }
 
                     const systemMessages = [
-                        { role: "system", content: systemPromptText + getPersonalityPrompt() + getMemoryPrompt() },
+                        { role: "system", content: systemPromptText + getPersonalityPrompt() + getMemoryPrompt() + getVoicePrompt() },
                         ...activeChatHistory
                     ];
 
@@ -2775,6 +2858,7 @@
                         if (memoryNote) notes.push(memoryNote);
                         notes.forEach(n => loadingDiv.appendChild(mk('div', 'prompt-details', n)));
                         activeChatHistory.push({ role: "assistant", content: result.content });
+                        lastAiReply = result.content;
                         saveCurrentChat();
                         incUsage('messages');
                         if (useSearch) incUsage('searches');
@@ -3675,6 +3759,10 @@
         function updateNewLabels() {
             const he = currentLang === 'he';
             const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+            document.querySelectorAll('.lbl-voice').forEach(el => { el.textContent = he ? 'שיחה' : 'Talk'; });
+            document.querySelectorAll('.voice-btn').forEach(el => { el.title = he ? 'שיחה קולית' : 'Voice conversation'; });
+            const vTop = document.getElementById('voice-top');
+            if (vTop) vTop.textContent = he ? 'שיחה קולית · NexusMind AI' : 'Voice conversation · NexusMind AI';
             set('ptab-btn-account', he ? 'חשבון' : 'Account');
             set('ptab-btn-personality', he ? 'אישיות' : 'Personality');
             set('ptab-btn-memory', he ? '🧠 זיכרון' : '🧠 Memory');
@@ -3731,6 +3819,298 @@
             if (ta) ta.placeholder = he ? 'תאר איך ה-AI צריך להתנהג...' : 'Describe how the AI should behave...';
             ['mic-home', 'mic-chat'].forEach(id => { const b = document.getElementById(id); if (b) b.title = he ? 'הקלטה' : 'Voice input'; });
         }
+
+        /* ================= שיחה קולית ================= */
+        const VOICE_END_SILENCE_MS = 1800;   // כמה שתיקה מסיימת את התור שלך
+        const voice = { active: false, muted: false, state: 'idle', rec: null, cancelSpeech: false, idle: 0, paused: false, fatal: '', shakeTimer: null, loopRunning: false };
+        let lastAiReply = '';
+
+        function voiceSleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+        function voiceT(he, en) { return currentLang === 'he' ? he : en; }
+
+        function getVoicePrompt() {
+            if (!voice.active) return '';
+            return currentLang === 'he'
+                ? '\n\nהמשתמש מדבר איתך כרגע בשיחה קולית, והתשובה שלך מוקראת בקול. ענה בקצרה (שניים עד שלושה משפטים), בשפה מדוברת וטבעית, בלי כותרות, רשימות, קוד, קישורים או אימוג\'ים.'
+                : '\n\nThe user is talking to you in a voice conversation and your reply is read aloud. Answer briefly (two to three sentences) in natural spoken language, with no headings, lists, code, links or emojis.';
+        }
+
+        function setVoiceState(st) {
+            voice.state = st;
+            const ov = document.getElementById('voice-overlay');
+            if (!ov) return;
+            ['listening', 'thinking', 'speaking', 'muted', 'paused'].forEach(x => ov.classList.remove('state-' + x));
+            ov.classList.add('state-' + st);
+            const texts = {
+                listening: voiceT('מקשיב...', 'Listening...'),
+                thinking: voiceT('חושב...', 'Thinking...'),
+                speaking: voiceT('מדבר...', 'Speaking...'),
+                muted: voiceT('המיקרופון מושתק', 'Microphone muted'),
+                paused: voiceT('לחץ על הלוגו כדי להמשיך', 'Tap the logo to continue')
+            };
+            const el = document.getElementById('voice-status');
+            if (el) el.textContent = texts[st] || '';
+            const mute = document.getElementById('voice-mute-btn');
+            if (mute) mute.classList.toggle('muted', voice.muted);
+        }
+
+        function pulseLogo(ms) {
+            const logo = document.getElementById('voice-logo');
+            if (!logo) return;
+            logo.classList.add('shake');
+            clearTimeout(voice.shakeTimer);
+            voice.shakeTimer = setTimeout(() => logo.classList.remove('shake'), ms || 450);
+        }
+
+        function kickLogo() {
+            const k = document.getElementById('voice-kick');
+            if (!k) return;
+            k.classList.remove('kick');
+            void k.offsetWidth;
+            k.classList.add('kick');
+        }
+
+        function speechRecognitionClass() { return window.SpeechRecognition || window.webkitSpeechRecognition; }
+
+        function openVoiceMode() {
+            const he = currentLang === 'he';
+            if (!currentUser || voice.active) return;
+            if (!speechRecognitionClass()) {
+                alert(he ? "הדפדפן הזה לא תומך בשיחה קולית. נסה Chrome, Edge או Safari." : "This browser doesn't support voice conversations. Try Chrome, Edge or Safari.");
+                return;
+            }
+            if (micSession) stopMic();
+
+            // עוברים למסך שיחה (אם אנחנו במסך הבית)
+            if (!document.getElementById('home-view').classList.contains('hidden')) {
+                document.getElementById('home-view').classList.add('hidden');
+                document.getElementById('chat-view').classList.remove('hidden');
+                document.getElementById('btn-back-nav').classList.remove('hidden');
+                activeChatHistory = [];
+                currentChatId = Date.now().toString();
+                document.getElementById('chat-messages').innerHTML = '';
+            }
+
+            voice.active = true;
+            voice.muted = false;
+            voice.paused = false;
+            voice.idle = 0;
+            voice.fatal = '';
+            document.getElementById('voice-user-cap').textContent = '';
+            document.getElementById('voice-ai-cap').textContent = '';
+            document.getElementById('voice-overlay').classList.remove('hidden');
+            const mute = document.getElementById('voice-mute-btn');
+            if (mute) mute.title = he ? 'השתק מיקרופון' : 'Mute microphone';
+            setVoiceState('listening');
+            voiceLoop();
+        }
+
+        function endVoiceMode() {
+            if (!voice.active && document.getElementById('voice-overlay').classList.contains('hidden')) return;
+            voice.active = false;
+            voice.cancelSpeech = true;
+            try { if (voice.rec) voice.rec.stop(); } catch (e) {}
+            try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (e) {}
+            clearTimeout(voice.shakeTimer);
+            document.getElementById('voice-overlay').classList.add('hidden');
+            const logo = document.getElementById('voice-logo');
+            if (logo) logo.classList.remove('shake');
+            const cm = document.getElementById('chat-messages');
+            if (cm) cm.scrollTop = cm.scrollHeight;
+        }
+
+        function toggleVoiceMute() {
+            if (!voice.active) return;
+            voice.muted = !voice.muted;
+            if (voice.muted) {
+                try { if (voice.rec) voice.rec.stop(); } catch (e) {}
+                setVoiceState('muted');
+            } else {
+                voice.idle = 0;
+                setVoiceState('listening');
+            }
+            const mute = document.getElementById('voice-mute-btn');
+            if (mute) mute.innerHTML = voice.muted
+                ? '<svg class="ic" viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></svg>' : '<svg class="ic" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>';
+        }
+
+        function onVoiceLogoTap() {
+            if (!voice.active) return;
+            if (voice.state === 'speaking') {
+                // קוטעים את ה-AI וחוזרים להקשבה
+                voice.cancelSpeech = true;
+                try { window.speechSynthesis.cancel(); } catch (e) {}
+            } else if (voice.state === 'paused') {
+                voice.paused = false;
+                voice.idle = 0;
+            }
+        }
+
+        function voiceListenOnce() {
+            return new Promise(resolve => {
+                const SR = speechRecognitionClass();
+                const he = currentLang === 'he';
+                const r = new SR();
+                r.lang = he ? 'he-IL' : 'en-US';
+                r.interimResults = true;
+                r.continuous = true;
+                const user = document.getElementById('voice-user-cap');
+                user.textContent = '';
+                let text = '', heard = false, done = false;
+                const started = Date.now();
+                let last = started;
+
+                const finish = () => {
+                    if (done) return;
+                    done = true;
+                    clearInterval(timer);
+                    voice.rec = null;
+                    resolve(text.trim());
+                };
+
+                r.onresult = (ev) => {
+                    let t = '';
+                    for (let i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript;
+                    text = t;
+                    heard = true;
+                    last = Date.now();
+                    user.textContent = t;
+                    pulseLogo(500);
+                    kickLogo();
+                };
+                r.onspeechstart = () => { last = Date.now(); pulseLogo(500); };
+                r.onsoundstart = () => { pulseLogo(350); };
+                r.onerror = (ev) => {
+                    if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') {
+                        voice.fatal = ev.error;
+                        alert(he ? "אין הרשאה למיקרופון. אפשר אותה בהגדרות הדפדפן." : "Microphone permission denied. Enable it in browser settings.");
+                    } else if (ev.error === 'audio-capture') {
+                        voice.fatal = ev.error;
+                        alert(he ? "לא נמצא מיקרופון." : "No microphone found.");
+                    }
+                };
+                r.onend = finish;
+
+                const timer = setInterval(() => {
+                    const now = Date.now();
+                    const stopNow = !voice.active || voice.muted ||
+                        (heard && now - last > VOICE_END_SILENCE_MS) ||
+                        (!heard && now - started > 9000);
+                    if (stopNow) { try { r.stop(); } catch (e) { finish(); } }
+                }, 200);
+
+                voice.rec = r;
+                try { r.start(); } catch (e) { finish(); }
+            });
+        }
+
+        function voiceCleanForSpeech(t) {
+            let s = String(t || '');
+            s = s.replace(/```[\s\S]*?```/g, ' ');
+            s = s.replace(/`([^`]*)`/g, '$1');
+            s = s.replace(/\[([^\]]+)\]\(https?:\/\/[^)]+\)/g, '$1');
+            s = s.replace(/https?:\/\/\S+/g, '');
+            s = s.replace(/[*#>~|]+/g, ' ');
+            s = s.replace(/^\s*[-•]\s+/gm, '').replace(/^\s*\d+[.)]\s+/gm, '');
+            try { s = s.replace(new RegExp('\\p{Extended_Pictographic}', 'gu'), ''); } catch (e) {}
+            return s.replace(/\s+/g, ' ').trim();
+        }
+
+        function voiceChunks(t) {
+            const parts = t.match(/[^.!?…\n]+[.!?…]*\s*/g) || [t];
+            const out = [];
+            let cur = '';
+            parts.forEach(p => {
+                if ((cur + p).length > 200 && cur) { out.push(cur.trim()); cur = p; } else cur += p;
+            });
+            if (cur.trim()) out.push(cur.trim());
+            return out.flatMap(c => c.length > 260 ? (c.match(/.{1,240}(\s|$)/g) || [c]) : [c]).filter(Boolean);
+        }
+
+        function voiceDetectLang(t) {
+            const heCount = (String(t).match(/[\u0590-\u05FF]/g) || []).length;
+            const enCount = (String(t).match(/[A-Za-z]/g) || []).length;
+            return heCount >= enCount ? 'he-IL' : 'en-US';
+        }
+
+        function voicePick(lang) {
+            try {
+                const voices = window.speechSynthesis.getVoices() || [];
+                const pref = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(lang.slice(0, 2).toLowerCase()));
+                return pref.find(v => /natural|google|online/i.test(v.name)) || pref[0] || null;
+            } catch (e) { return null; }
+        }
+
+        function voiceSpeak(reply) {
+            return new Promise(resolve => {
+                if (!('speechSynthesis' in window)) { resolve(); return; }
+                const lang = voiceDetectLang(reply);
+                const chunks = voiceChunks(voiceCleanForSpeech(reply));
+                voice.cancelSpeech = false;
+
+                const speakChunk = (idx) => {
+                    if (!voice.active || voice.cancelSpeech || idx >= chunks.length) { resolve(); return; }
+                    let moved = false, started = false;
+                    const go = () => { if (moved) return; moved = true; speakChunk(idx + 1); };
+                    const u = new SpeechSynthesisUtterance(chunks[idx]);
+                    u.lang = lang;
+                    const v = voicePick(lang);
+                    if (v) u.voice = v;
+                    u.onstart = () => { started = true; };
+                    u.onboundary = () => kickLogo();
+                    u.onend = go;
+                    u.onerror = go;
+                    setTimeout(() => { if (!started) go(); }, 4000);   // אם אין קול במכשיר, לא נתקעים
+                    window.speechSynthesis.speak(u);
+                };
+                try { window.speechSynthesis.cancel(); } catch (e) {}
+                setTimeout(() => speakChunk(0), 60);
+            });
+        }
+
+        async function voiceLoop() {
+            if (voice.loopRunning) return;
+            voice.loopRunning = true;
+            try {
+                while (voice.active) {
+                    if (voice.muted) { setVoiceState('muted'); await voiceSleep(250); continue; }
+                    if (voice.paused) { setVoiceState('paused'); await voiceSleep(250); continue; }
+
+                    setVoiceState('listening');
+                    const heard = await voiceListenOnce();
+                    if (!voice.active) break;
+                    if (voice.fatal) { endVoiceMode(); break; }
+                    if (voice.muted) continue;
+
+                    if (!heard) {
+                        voice.idle++;
+                        if (voice.idle >= 4) voice.paused = true;
+                        await voiceSleep(300);
+                        continue;
+                    }
+                    voice.idle = 0;
+                    document.getElementById('voice-user-cap').textContent = heard;
+                    document.getElementById('voice-ai-cap').textContent = '';
+                    setVoiceState('thinking');
+                    await sendChatMessage(heard);
+                    if (!voice.active) break;
+
+                    const reply = lastAiReply;
+                    if (reply) {
+                        document.getElementById('voice-ai-cap').textContent = voiceCleanForSpeech(reply);
+                        setVoiceState('speaking');
+                        await voiceSpeak(reply);
+                    } else {
+                        document.getElementById('voice-ai-cap').textContent = voiceT('משהו השתבש, נסה שוב.', 'Something went wrong, try again.');
+                        await voiceSleep(900);
+                    }
+                }
+            } finally {
+                voice.loopRunning = false;
+            }
+        }
+
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && voice.active) endVoiceMode(); });
 
         /* ================= טעינת הגדרות חשבון (פעם אחת) ================= */
         async function loadAccountPrefs() {
@@ -3827,7 +4207,7 @@
                 '.sidebar-toggle-btn:hover,.back-nav-btn:hover,.user-badge:hover,.mini-btn:hover,.style-chip:hover,.sb-link:hover{background:' + btnHover + ';}' +
                 '.chip,.theme-select,.lang-select,.sb-search,.picker-input{background:' + btnStrong + ';}' +
                 '.chip:hover{background:' + btnHover + ';}' +
-                '.send-btn,.new-chat-btn,.auth-btn,.action-btn,.picker-go,.style-chip.selected,.mini-btn.on,.admin-tab.active,.download-btn,.sb-avatar{color:' + ink + ';}';
+                '.send-btn,.new-chat-btn,.auth-btn,.action-btn,.picker-go,.style-chip.selected,.mini-btn.on,.admin-tab.active,.download-btn,.sb-avatar,.voice-btn{color:' + ink + ';}';
         }
 
         function fillUiPickers(c) {
