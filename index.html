@@ -1041,6 +1041,15 @@
             .voice-logo, .voice-rings span, .voice-kick { animation: none !important; }
         }
 
+        .model-select {
+            background: rgba(255,255,255,0.08); border: 1px solid var(--card-border); color: var(--text-main);
+            border-radius: 1.2rem; padding: 0.32rem 0.7rem; font-size: 0.78rem; cursor: pointer; outline: none;
+            max-width: 230px; text-overflow: ellipsis;
+        }
+        .model-select:hover, .model-select:focus { border-color: var(--accent); }
+        .model-select option { background: #0f172a; color: #f8fafc; }
+        @media (max-width: 600px) { .model-select { max-width: 150px; } }
+
         .hidden { display: none !important; }
     </style>
 </head>
@@ -1363,7 +1372,8 @@
                     <div style="display:flex; align-items:center; gap:0.5rem;">
                         <button class="mic-btn" id="mic-home" onclick="toggleMic('home-input','mic-home')" title="הקלטה"><svg class="ic" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></button>
                         <button class="voice-btn" onclick="openVoiceMode()" title="שיחה קולית"><svg class="ic" viewBox="0 0 24 24"><path d="M7 18h2V6H7v12zm4 4h2V2h-2v20zm-8-8h2v-4H3v4zm12 4h2V6h-2v12zm4-8v4h2v-4h-2z"/></svg><span class="lbl-voice">שיחה</span></button>
-                        <button class="mini-btn" id="btn-search-toggle-home" onclick="toggleSearch()">🌐 חיפוש</button>
+                        <button class="mini-btn hidden" id="btn-search-toggle-home" onclick="toggleSearch()">🌐 חיפוש</button>
+                        <select id="model-select-home" class="model-select" onchange="onModelChange(this.value)" title="בחר מודל"></select>
                     </div>
                     <div class="search-actions">
                         <button class="send-btn" onclick="startChatFromHome()">
@@ -1394,9 +1404,9 @@
                     <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
                         <button class="mic-btn" id="mic-chat" onclick="toggleMic('chat-input','mic-chat')" title="הקלטה"><svg class="ic" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></button>
                         <button class="voice-btn" onclick="openVoiceMode()" title="שיחה קולית"><svg class="ic" viewBox="0 0 24 24"><path d="M7 18h2V6H7v12zm4 4h2V2h-2v20zm-8-8h2v-4H3v4zm12 4h2V6h-2v12zm4-8v4h2v-4h-2z"/></svg><span class="lbl-voice">שיחה</span></button>
-                        <button class="mini-btn" id="btn-search-toggle" onclick="toggleSearch()">🌐 חיפוש</button>
+                        <button class="mini-btn hidden" id="btn-search-toggle" onclick="toggleSearch()">🌐 חיפוש</button>
                         <button class="mini-btn" id="btn-export-chat" onclick="exportChat()">⬇ ייצוא שיחה</button>
-                        <span style="font-size:0.8rem; color:var(--text-muted);" id="lbl-ai-status">NexusMind AI v3.0</span>
+                        <select id="model-select-chat" class="model-select" onchange="onModelChange(this.value)" title="בחר מודל"></select>
                     </div>
                     <button class="send-btn" onclick="sendChatMessage()">
                         <svg class="svg-icon send-btn-icon" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -1413,12 +1423,18 @@
     </div>
 
     <script>
-        /* ================= OpenRouter ================= */
+        /* ================= Google Gemini (דרך ה-Worker) ================= */
         // המפתח שמור ב-Cloudflare Worker, לא כאן
         const API_KEY = "";
         const API_BASE_URL = "https://nexusmind-ai2.oriwerdiger.workers.dev/v1";
-        // אפשר להחליף לכל מודל מ-openrouter.ai/models
-        const CHAT_MODEL = "openrouter/auto";
+        // המודלים שאפשר לבחור (חייבים להיות באותו שם גם ב-CHAT_MODELS בתוך ה-Worker)
+        const CHAT_MODEL_OPTIONS = [
+            { id: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash Lite', he: 'מהיר (ברירת מחדל)', en: 'Fast (default)' },
+            { id: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite', he: 'חסכוני', en: 'Lightweight' },
+            { id: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash', he: 'חכם יותר', en: 'Smarter' },
+            { id: 'gemma-3-27b-it', label: 'Gemma 3 27B', he: 'הכי הרבה הודעות ביום', en: 'Most messages per day' }
+        ];
+        let CHAT_MODEL = CHAT_MODEL_OPTIONS[0].id;
 
         // קישור ברירת מחדל לוידאו Jumpscare - חייב להיות קישור ישיר לקובץ (mp4/webm/mov) או YouTube
         // אפשר גם להדביק קישור אחר בלוח הניהול בלי לשנות כאן
@@ -2855,6 +2871,11 @@
                         const notes = [];
                         if (searchFailed) notes.push(he ? 'החיפוש לא זמין כרגע, התשובה ניתנה בלי חיפוש (לא נספר במכסה).' : 'Search is unavailable right now; answered without it (not counted).');
                         if (limitHit) notes.push(he ? 'הגעת למגבלת החיפושים להיום, התשובה ניתנה בלי חיפוש.' : "You've reached today's search limit; answered without searching.");
+                        if (result.modelUsed && result.modelUsed !== CHAT_MODEL) {
+                            notes.push(he
+                                ? '⚠️ ' + modelLabel(CHAT_MODEL) + ' לא זמין כרגע (כנראה המכסה נגמרה), ולכן ' + modelLabel(result.modelUsed) + ' ענה במקומו.'
+                                : '⚠️ ' + modelLabel(CHAT_MODEL) + ' is unavailable right now (quota?), so ' + modelLabel(result.modelUsed) + ' answered instead.');
+                        }
                         if (memoryNote) notes.push(memoryNote);
                         notes.forEach(n => loadingDiv.appendChild(mk('div', 'prompt-details', n)));
                         activeChatHistory.push({ role: "assistant", content: result.content });
@@ -3807,6 +3828,7 @@
             const sbs = document.getElementById('sb-search');
             if (sbs) sbs.placeholder = he ? 'חיפוש בשיחות...' : 'Search chats...';
             updateSearchButtons();
+            renderModelSelects();
             updateSidebarUser();
             set('lbl-personality', he ? 'אישיות ה-AI:' : 'AI personality:');
             set('btn-save-personality', he ? 'שמור אישיות' : 'Save personality');
@@ -4112,11 +4134,51 @@
 
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && voice.active) endVoiceMode(); });
 
+        /* ================= בחירת מודל ================= */
+        function modelLabel(id) {
+            const m = CHAT_MODEL_OPTIONS.find(x => x.id === id);
+            return m ? m.label : id;
+        }
+
+        function renderModelSelects() {
+            const he = currentLang === 'he';
+            ['model-select-home', 'model-select-chat'].forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                sel.innerHTML = '';
+                CHAT_MODEL_OPTIONS.forEach(m => {
+                    const o = document.createElement('option');
+                    o.value = m.id;
+                    o.textContent = m.label + ' · ' + (he ? m.he : m.en);
+                    sel.appendChild(o);
+                });
+                sel.value = CHAT_MODEL;
+                sel.title = he ? 'בחר מודל' : 'Choose a model';
+            });
+        }
+
+        async function onModelChange(id) {
+            if (!CHAT_MODEL_OPTIONS.some(m => m.id === id)) return;
+            CHAT_MODEL = id;
+            renderModelSelects();
+            if (!currentUser) return;
+            try { localStorage.setItem('nexus_model_' + currentUser.uid, id); } catch (e) {}
+            try { await dbPatch('accounts/' + currentUser.uid, { model: id }); } catch (e) {}
+        }
+
+        function loadModelChoice(acc) {
+            let id = acc && acc.model;
+            if (!id && currentUser) { try { id = localStorage.getItem('nexus_model_' + currentUser.uid); } catch (e) {} }
+            if (CHAT_MODEL_OPTIONS.some(m => m.id === id)) CHAT_MODEL = id;
+            renderModelSelects();
+        }
+
         /* ================= טעינת הגדרות חשבון (פעם אחת) ================= */
         async function loadAccountPrefs() {
             if (!currentUser) return;
             let acc = null;
             try { acc = await dbGet('accounts/' + currentUser.uid); } catch (e) {}
+            loadModelChoice(acc);
             loadPersonality(acc);
             loadCustomBg(acc);
             loadUiColors(acc);
@@ -4205,7 +4267,7 @@
                 '.search-box-container{background:' + panelStrong + ';}' +
                 '.sidebar-toggle-btn,.back-nav-btn,.user-badge,.mini-btn,.style-chip,.sb-link{background:' + btn + ';}' +
                 '.sidebar-toggle-btn:hover,.back-nav-btn:hover,.user-badge:hover,.mini-btn:hover,.style-chip:hover,.sb-link:hover{background:' + btnHover + ';}' +
-                '.chip,.theme-select,.lang-select,.sb-search,.picker-input{background:' + btnStrong + ';}' +
+                '.chip,.theme-select,.lang-select,.model-select,.sb-search,.picker-input{background:' + btnStrong + ';}' +
                 '.chip:hover{background:' + btnHover + ';}' +
                 '.send-btn,.new-chat-btn,.auth-btn,.action-btn,.picker-go,.style-chip.selected,.mini-btn.on,.admin-tab.active,.download-btn,.sb-avatar,.voice-btn{color:' + ink + ';}';
         }
@@ -4587,6 +4649,7 @@
                 return { content: '', annotations: [], error: msg };
             }
 
+            const modelUsed = response.headers.get('X-Model-Used') || '';
             const container = document.getElementById('chat-messages');
             let textSpan = null;
             let content = '';
@@ -4656,7 +4719,7 @@
 
             finished = true;
             content = content.trim();
-            return { content: content, annotations: annotations, error: content ? null : (streamErr || null) };
+            return { content: content, annotations: annotations, modelUsed: modelUsed, error: content ? null : (streamErr || null) };
         }
 
         function appendSources(div, annotations) {
